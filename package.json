@@ -12,5 +12,9 @@
     "chai"
   ],
   "author": "Keshav Thakur",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "nodeman": "^1.1.2",
+    "prettier": "^3.2.5"
+  }
 }
