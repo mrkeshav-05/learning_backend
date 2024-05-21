@@ -1,0 +1,16 @@
+{
+  "name": "learning_backend",
+  "version": "1.0.0",
+  "description": "learing backend with hitesh chaudhary",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "backend",
+    "javascript",
+    "chai"
+  ],
+  "author": "Keshav Thakur",
+  "license": "ISC"
+}
