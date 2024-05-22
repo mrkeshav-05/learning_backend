@@ -11,11 +11,12 @@ import dotenv from 'dotenv';
 // import { DB_NAME } from './constants';
 
 import connectDB from './database/index.js';
-import express from 'express';
+// import express from 'express';
+
+import { app } from './app.js';
+// const app = express();
 
 dotenv.config({ path: './env'});
-
-const app = express();
 
 connectDB()
   .then(() => {

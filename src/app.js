@@ -28,4 +28,16 @@ app.use(express.static('public'));
 
 app.use(cookieParser());
 
-export { app }
+
+
+// Routes
+// This is the route for the user
+import userRouter from './routes/user.routes.js';
+
+app.use('/api/v1/user', userRouter);
+// routes decaleration
+// This is the route for the video
+
+// http://loaclhost:8000/api/v1/user/register
+
+export { app };
