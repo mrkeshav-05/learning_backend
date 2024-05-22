@@ -54,7 +54,7 @@ userSchema.pre("save", async function (next) { //this syntax of callback bcz thi
   if(!this.isModified("password")){// this is for checking that the password is modified or not
     return next();
   }
-  this.password = bcrypt.hash(this.password, 10);// this.password is for databse password and 10 is for the hashing of password
+  this.password = await bcrypt.hash(this.password, 10);// this.password is for databse password and 10 is for the hashing of password
   next();
 })
 
