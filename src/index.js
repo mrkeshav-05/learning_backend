@@ -11,11 +11,26 @@ import dotenv from 'dotenv';
 // import { DB_NAME } from './constants';
 
 import connectDB from './database/index.js';
-
+import express from 'express';
 
 dotenv.config({ path: './env'});
 
-connectDB();
+const app = express();
+
+connectDB()
+  .then(() => {
+    app.on('error', (error) => {
+      console.log("Error connecting to the database: ", error);
+      throw error;
+    })
+    app.listen(process.env.PORT || 8000, () => {
+      console.log("Server is running on port " + process.env.PORT);
+    });
+  })
+  .catch((error) => {
+  console.log("MONGODB Connection failed !!! ", error);
+  throw error;
+  });
 
 
 
