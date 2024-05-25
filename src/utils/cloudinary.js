@@ -12,18 +12,24 @@ cloudinary.config({
 // this is for uploading file on cloudinary and removing the file from the local storage
 const uploadOnCloudinary = async (localFilePath) => {
   try{
-    if(!localFilePath) {
-      throw new Error("File path is required");
+    console.log("this is in upload",localFilePath)
+    if(!localFilePath){
+      // console.log("lo")
+      return {error: "File path is missing"};
+    };
+    // Check if the file exists before uploading
+    if (!fs.existsSync(localFilePath)) {
+      return { error: "File not found" };
     }
     // upload file on cloudinary
-    const response = await cloudinary.uploader.upload(localFilePath, {resource_type: "auto"}, (error, result) => {
-      if(error) {
-        throw new Error(error.message);
-      }
-      return result;
+    const response = await cloudinary.uploader.upload(localFilePath, {
+      resource_type: "auto"
     });//file has been uploaded on cloudinary
-    console.log("file has been uploaded on cloudinary");
-    console.log(response.url);
+    console.log("what about respo",response);
+
+    // Remove the local file after successful upload
+    fs.unlinkSync(localFilePath);
+    console.log("Local file deleted:", localFilePath);
     return response;
   }catch(error){
     fs.unlinkSync(localFilePath); //remove the locally stored file as upload get failed

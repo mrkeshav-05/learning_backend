@@ -3,7 +3,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
-
+import { v2 as cloudinary } from 'cloudinary';
+import fs from 'fs';
 const registerUser = asyncHandler(async (req, res) => {
   // steps to register a user ---
     // 1. get the user details from frontend(client)
@@ -17,18 +18,18 @@ const registerUser = asyncHandler(async (req, res) => {
     // 8. check the user creation 
     // 9. send the response back to the client
 
-  const {username, email, fullname, password} = req.body
+  const {username, email, fullName, password} = req.body
   console.log("email: ", email)
 
   if(
-    [username, email, fullname, password].some((field) => {
+    [username, email, fullName, password].some((field) => {
       field?.trim() === ""
     })
   ){
     throw new ApiError(400, "All fields are required")
   }
 
-  User.findOne({
+  const existingUser = await User.findOne({
     $or: [
       {username: username},
       {email: email}
@@ -41,16 +42,9 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(500, error.message)
   })
 
-  // const existingUser = User.findOne({
-  //   $or: [
-  //     {username: username},
-  //     {email: email}
-  //   ]
-  // })
-
-  // if(existingUser){
-  //   throw new ApiError(409, "User already exists")
-  // }
+  if(existingUser){
+    throw new ApiError(409, "User already exists")
+  }
 
   const avatarLocalPath = req.files?.avatar[0]?.path;
   const coverImageLocalPath = req.files?.coverImage[0]?.path;
@@ -58,26 +52,30 @@ const registerUser = asyncHandler(async (req, res) => {
   if(!avatarLocalPath){
     throw new ApiError(400, "Avatar is required")
   }
+  // console.log(avatarLocalPath)
+  // console.log("-----")
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
   if(!avatar){
-    throw new ApiError(500, "Avatar upload failed")
+    throw new ApiError(400, "Avatar upload failed")
   }
 
   const user = await User.create({
     username: username.toLowerCase(),
     email,
-    fullname,
+    fullName,
     password,
-    avatar: avatar.url,
+    avatar: avatar?.url || "",
     coverImage: coverImage?.url || ""
   })
+  console.log(user)
 
-  const createdUser = await user.findById(user._id).select(
+  const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
   )
+  
 
   if(!createdUser){
     throw new ApiError(500, "Something went wrong while entering the user in the database")
