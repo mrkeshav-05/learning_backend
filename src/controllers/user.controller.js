@@ -103,7 +103,9 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something went wrong while entering the user in the database")
   }
 
-  return res.status(201).json(
+  return res
+  .status(201)
+  .json(
     new ApiResponse(200, "User created successfully", createdUser)
   )
 
@@ -280,7 +282,9 @@ const updateAccountDetails = asyncHandler(async () => {
 
   return res
   .status(200)
-  .json(new ApiResponse(200, user, "Account details updated successfully"))
+  .json(
+    new ApiResponse(200, user, "Account details updated successfully")
+  )
 });
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
@@ -339,6 +343,80 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
   )
 })
 
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+  const {username} = req.params
+
+  if(!username?.trim()){
+    throw new ApiError(400, "Username is missing")
+  }
+
+  const channel = await User.aggregate([
+    {
+      $match: {
+        username: username?.toLowerCase()
+      }
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers"
+      }
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscriber",
+        as: "subscribedTo"
+      }
+    },
+    {
+      $addFields: {
+        subscribersCount: {
+          $size: "$subscribers"
+        },
+        channelsSubscribedToCount: {
+          $size: "$subscribedTo"
+        },
+        isSubscribed: {
+          $cond: {
+            if: {$in: [req.user?.id, "$subscribers.subscriber"]},
+            then: true,
+            else: false
+          }
+        }
+      }
+    },
+    {
+      $project: {
+        fullName: 1,
+        username: 1,
+        subscribersCount: 1,
+        channelsSubscribedToCount: 1,
+        isSubscribed: 1,
+        avatar: 1,
+        coverImage: 1,
+        email: 1,
+
+      }
+    }
+  ])
+
+  if(!channel?.length){
+    throw new ApiError(404, "Channel does not exists")
+  }
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(200, channel, "Channel details fetched successfully")
+  )
+})
+
+
+
 export { 
   registerUser,
   loginUser,
@@ -348,5 +426,9 @@ export {
   getCurrentUser,
   updateAccountDetails,
   updateUserAvatar,
-  updateUserCoverImage
+  updateUserCoverImage,
+  getUserChannelProfile
 };
+
+
+// One HomwWork for deleting the previous avatar and coverImage of the user from the clodinary
